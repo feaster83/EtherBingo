@@ -40,28 +40,15 @@ window.App = {
             accounts = accs;
             account = accounts[0];
 
-            self.getRandomNumber();
-            self.getCounter();
-            self.buyCard();
+            self.getCardCount();
         });
 
 
     },
 
-    getRandomNumber: function () {
+    getCardCount: function () {
         EtherBingo.deployed().then(function (etherBingo) {
-            return etherBingo.getRandomNumber.sendTransaction({from: account, gas:100000});
-        }).then(function (value) {
-            var randomNumber_element = document.getElementById("randomNumber");
-            randomNumber_element.innerHTML = value.valueOf();
-        }).catch(function (e) {
-            console.log(e);
-        });
-    },
-
-    getCounter: function () {
-        EtherBingo.deployed().then(function (etherBingo) {
-            return etherBingo.getGameCounter.sendTransaction({from: account, gas:100000});
+            return etherBingo.getGameCounter.call({from:web3.eth.coinbase, gas:100000});
         }).then(function (value) {
             var counter_element = document.getElementById("counter");
             counter_element.innerHTML = value.valueOf();
