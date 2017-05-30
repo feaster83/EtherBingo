@@ -39,6 +39,55 @@ h3 {
   font-size: 24px;
 }
 
+.bingocard {
+  display: table;
+  background: red;
+  width: 500px;
+  text-align: center;
+  vertical-align: center;
+  margin-bottom: 40px;
+}
+
+#cardtemplate  {
+  visibility: hidden;
+  display: none;
+}
+
+.bingocard .bingocardFooter {
+  display: table-header-group;
+}
+
+.bingocard .bingocardFooter div {
+  position: absolute;
+  width: 500px;
+  background: red;
+  color: white;
+}
+
+.bingocard .bingocardHeader {
+  display: table-header-group;
+}
+
+.bingocard .bingocardHeader div {
+  position:relative;
+  display: table-cell;
+  padding: 8px;
+  border: 0.5px solid black;
+  color: white;
+  text-decoration-color: whitesmoke;
+}
+
+.bingocard .bingocardRow {
+  display: table-row;
+}
+
+.bingocard .bingocardRow div {
+  display: table-cell;
+  background: white;
+  padding: 8px;
+  border-bottom: 0.5px solid black;
+}
+
 .black {
   color: black;
 }

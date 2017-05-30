@@ -16,14 +16,16 @@ var EtherBingo = contract(etherbingo_artifacts);
 // For application bootstrapping, check out window.addEventListener below.
 var accounts;
 var account;
+var etherBingo;
 
 window.App = {
+
+
+
     start: function () {
-        var self = this;
 
         // Bootstrap the MetaCoin abstraction for Use.
         EtherBingo.setProvider(web3.currentProvider);
-
 
         // Get the initial account balance so it can be displayed.
         web3.eth.getAccounts(function (err, accs) {
@@ -40,34 +42,90 @@ window.App = {
             accounts = accs;
             account = accounts[0];
 
-            self.getCardCount();
+            EtherBingo.deployed().then(function(newEtherBingo) {
+                etherBingo = newEtherBingo; // set global instance reference to etherBingo
+
+                var transfers = etherBingo.eventNewCardGenerated({fromBlock: 0, toBlock: 'latest'});
+                transfers.watch(function(error, result) {
+                    App.getCardCount();
+
+                    if (result.args.owner == account) {
+                        App.getCardNumbers(result.args.cardId);
+                    }
+                });
+
+                App.getCardCount();
+                App.getCardsOfAccount();
+            });
+
+
         });
 
 
+    },
+
+    errorHandler: function(e) {
+        console.log(e);
+    },
+
+    getCardNumbers: function (cardId) {
+        var cards = document.getElementById('cards');
+        var cardTemplate = document.getElementById("cardtemplate");
+        var newCard = cardTemplate.cloneNode(true);
+
+        newCard.id = "card"+cardId;
+        cards.appendChild(newCard);
+
+        newCard.getElementsByClassName("bingocardFooter").item(0).firstChild.innerHTML = "Card: " + cardId;
+
+        App.getBingoNumber(cardId, newCard, 0);
+    },
+
+    getBingoNumber: function(cardId, newCard, index) {
+        if (index < 25) {
+            etherBingo.getCardNumber.call(cardId, index, {from: account}).then(function (value) {
+                var rowNr = Math.floor(index / 5);
+                var row = newCard.getElementsByClassName("bingocardRow")[rowNr];
+                var cellNumber = index % 5;
+                var cardNumberValue = value.valueOf();
+                var targetCell = row.children[cellNumber];
+
+                console.log("Updating card " + newCard.id + " value " + cardNumberValue + " on [" + rowNr + "," + cellNumber + "]");
+
+                targetCell.innerHTML = cardNumberValue
+
+                App.getBingoNumber(cardId, newCard, index + 1);
+
+            }).catch(App.errorHandler);
+        }
+    },
+
+    getCardsOfAccount: function () {
+        etherBingo.getCardsOfAddress.call({from: account}).then(function (value) {
+            var cardsOfAccount = value.valueOf();
+            console.log("Cards of account retreived: " + cardsOfAccount);
+            for (var i in cardsOfAccount) {
+                App.getCardNumbers(cardsOfAccount[i]);
+            }
+        }).catch(App.errorHandler);
     },
 
     getCardCount: function () {
-        EtherBingo.deployed().then(function (etherBingo) {
-            return etherBingo.getGameCounter.call({from:web3.eth.coinbase, gas:100000});
-        }).then(function (value) {
+        etherBingo.getGameCounter.call({from: account}).then(function (value) {
             var counter_element = document.getElementById("counter");
             counter_element.innerHTML = value.valueOf();
-        }).catch(function (e) {
-            console.log(e);
-        });
+        }).catch(App.errorHandler);
     },
 
-    buyCard: function () {
-        EtherBingo.deployed().then(function (etherBingo) {
-            return etherBingo.buyCard.sendTransaction({from: account, gas:100000});
-        }).then(function (value) {
-            var counter_element = document.getElementById("card");
-            counter_element.innerHTML = value.valueOf();
-        }).catch(function (e) {
-            console.log(e);
-        });
+    buyNewCard: function () {
+        console.log(etherBingo);
+
+        etherBingo.buyCard({from: account}).then(function() {
+            console.log("Testing");
+        }).catch(App.errorHandler);
     }
-}
+};
+
 
 
 window.addEventListener('load', function() {
