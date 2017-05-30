@@ -6,10 +6,10 @@ contract EtherBingo {
     uint constant NUMBERS_ON_CARD = 25;
 
     struct Card {
-    uint cardId;
-    address owner;
-    uint gameNumber;
-    uint8[25] numbers;
+        uint cardId;
+        address owner;
+        uint gameNumber;
+        uint8[25] numbers;
     }
     mapping(uint => Card) cards;
     mapping(address => uint[]) cardsOfAddress;
@@ -44,8 +44,7 @@ contract EtherBingo {
     }
 
     function getRandomNumber(uint min, uint max) internal returns (uint) {
-        randomNumberCounter++;
-        return uint(sha3(randomNumberCounter))%(min+max)-min;
+        return uint(sha3(randomNumberCounter++))%(min+max)-min;
     }
 
     function getCardNumbers(uint cardId) public returns (uint8[25]) {
