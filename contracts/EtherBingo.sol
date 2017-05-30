@@ -1,14 +1,15 @@
 pragma solidity ^0.4.11;
 
 contract EtherBingo {
-    uint constant MAX_NUMBER = 99;
+    uint constant MIN_NUMBER_ON_CARD = 1;
+    uint constant MAX_NUMBER_ON_CARD = 99;
     uint constant NUMBERS_ON_CARD = 25;
 
     struct Card {
-        uint cardId;
-        address owner;
-        uint gameNumber;
-        mapping(uint => uint) numbers;
+    uint cardId;
+    address owner;
+    uint gameNumber;
+    uint8[25] numbers;
     }
     mapping(uint => Card) cards;
     mapping(address => uint[]) cardsOfAddress;
@@ -19,21 +20,18 @@ contract EtherBingo {
     event eventNewCardGenerated(address owner, uint cardId);
 
     function EtherBingo() {
-        cardIdCounter = 0;
     }
 
     function buyCard() public payable {
         uint gameNr = getGameCounter();
+        uint cardId = ++cardIdCounter;
 
-        cardIdCounter++;
-        uint cardId = cardIdCounter;
+        cards[cardId].cardId = cardIdCounter;
+        cards[cardId].owner = msg.sender;
+        cards[cardId].gameNumber = gameNr;
 
-        cards[cardId] = Card({cardId : cardIdCounter,
-        owner : msg.sender,
-        gameNumber : gameNr});
-
-        for (uint nrIndex = 0; nrIndex <= NUMBERS_ON_CARD; nrIndex++) {
-            cards[cardId].numbers[nrIndex] = getRandomNumber();
+        for (uint nrIndex = 0; nrIndex < NUMBERS_ON_CARD; nrIndex++) {
+            cards[cardId].numbers[nrIndex] = uint8(getRandomNumber(MIN_NUMBER_ON_CARD, MAX_NUMBER_ON_CARD));
         }
 
         cardsOfAddress[msg.sender].push(cardId);
@@ -45,16 +43,17 @@ contract EtherBingo {
         return cardsOfAddress[msg.sender];
     }
 
-    function getRandomNumber() internal returns (uint) {
-        return uint(block.blockhash(block.number - 1)) * (cardIdCounter ^ 13) * (++randomNumberCounter ^ 5) % (MAX_NUMBER+1);
+    function getRandomNumber(uint min, uint max) internal returns (uint) {
+        randomNumberCounter++;
+        return uint(sha3(randomNumberCounter))%(min+max)-min;
     }
 
-    function getCardNumber(uint cardId, uint index) public returns (uint) {
+    function getCardNumbers(uint cardId) public returns (uint8[25]) {
         if (cardIdCounter < cardId) {
             throw;
         }
 
-        return cards[cardId].numbers[index];
+        return cards[cardId].numbers;
     }
 
     function getGameCounter() public returns (uint) {

@@ -20,8 +20,6 @@ var etherBingo;
 
 window.App = {
 
-
-
     start: function () {
 
         // Bootstrap the MetaCoin abstraction for Use.
@@ -73,37 +71,41 @@ window.App = {
         var cardTemplate = document.getElementById("cardtemplate");
         var newCard = cardTemplate.cloneNode(true);
 
-        newCard.id = "card"+cardId;
         cards.appendChild(newCard);
 
-        newCard.getElementsByClassName("bingocardFooter").item(0).firstChild.innerHTML = "Card: " + cardId;
+        // Fix this uggly code
+        newCard.getElementsByClassName("bingocardFooter").item(0).childNodes.item(1).innerHTML = "Card: " + cardId;
 
-        App.getBingoNumber(cardId, newCard, 0);
+        App.getBingoNumbers(cardId, newCard);
+
+        newCard.id = "card"+cardId; //Change name of newCard at the end because this makes it visible
     },
 
-    getBingoNumber: function(cardId, newCard, index) {
-        if (index < 25) {
-            etherBingo.getCardNumber.call(cardId, index, {from: account}).then(function (value) {
-                var rowNr = Math.floor(index / 5);
-                var row = newCard.getElementsByClassName("bingocardRow")[rowNr];
-                var cellNumber = index % 5;
-                var cardNumberValue = value.valueOf();
-                var targetCell = row.children[cellNumber];
+    getBingoNumbers: function(cardId, newCard) {
+            etherBingo.getCardNumbers.call(cardId, {from: account}).then(function (value) {
+              var cardNumbers = value.valueOf();
 
-                console.log("Updating card " + newCard.id + " value " + cardNumberValue + " on [" + rowNr + "," + cellNumber + "]");
+              cardNumbers = cardNumbers.sort((a, b) => a - b);
 
-                targetCell.innerHTML = cardNumberValue
+              console.log("Retrieve bingo numbers for card " + cardId + ": " + cardNumbers);
 
-                App.getBingoNumber(cardId, newCard, index + 1);
+              for (var index in cardNumbers) {
+                  var rowNr = Math.floor(index / 5);
+                  var row = newCard.getElementsByClassName("bingocardRow")[rowNr];
+                  var cellNumber = index % 5;
+                  var cardNumberValue = cardNumbers[index];
+                  var targetCell = row.children[cellNumber];
+
+                  targetCell.innerHTML = cardNumberValue
+              }
 
             }).catch(App.errorHandler);
-        }
     },
 
     getCardsOfAccount: function () {
         etherBingo.getCardsOfAddress.call({from: account}).then(function (value) {
             var cardsOfAccount = value.valueOf();
-            console.log("Cards of account retreived: " + cardsOfAccount);
+            console.log("Cards of account retrieved: " + cardsOfAccount);
             for (var i in cardsOfAccount) {
                 App.getCardNumbers(cardsOfAccount[i]);
             }
