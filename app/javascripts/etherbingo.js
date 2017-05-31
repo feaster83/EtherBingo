@@ -20,13 +20,13 @@ var etherBingo;
 
 window.App = {
 
-    start: function () {
+    start: () => {
 
         // Bootstrap the MetaCoin abstraction for Use.
         EtherBingo.setProvider(web3.currentProvider);
 
         // Get the initial account balance so it can be displayed.
-        web3.eth.getAccounts(function (err, accs) {
+        web3.eth.getAccounts((err, accs) => {
             if (err != null) {
                 alert("There was an error fetching your accounts.");
                 return;
@@ -39,34 +39,28 @@ window.App = {
 
             accounts = accs;
             account = accounts[0];
-
-            EtherBingo.deployed().then(function(newEtherBingo) {
-                etherBingo = newEtherBingo; // set global instance reference to etherBingo
-
-                var transfers = etherBingo.eventNewCardGenerated({fromBlock: 0, toBlock: 'latest'});
-                transfers.watch(function(error, result) {
-                    App.getCardCount();
-
-                    if (result.args.owner == account) {
-                        App.getCardNumbers(result.args.cardId);
-                    }
-                });
-
-                App.getCardCount();
-                App.getCardsOfAccount();
-            });
-
-
         });
 
+        EtherBingo.deployed().then(function(newEtherBingo) {
+            etherBingo = newEtherBingo; // set global instance reference to etherBingo
 
+            var transfers = etherBingo.eventNewCardGenerated({fromBlock: 0, toBlock: 'latest'});
+            transfers.watch(function(error, result) {
+                App.getCardCount();
+
+                if (result.args.owner == account) {
+                    App.getCardNumbers(result.args.cardId);
+                }
+            });
+
+            App.getCardCount();
+            App.getCardsOfAccount();
+        });
     },
 
-    errorHandler: function(e) {
-        console.log(e);
-    },
+    errorHandler: (e) => console.log(e),
 
-    getCardNumbers: function (cardId) {
+    getCardNumbers: (cardId) => {
         var cards = document.getElementById('cards');
         var cardTemplate = document.getElementById("cardtemplate");
         var newCard = cardTemplate.cloneNode(true);
@@ -81,8 +75,8 @@ window.App = {
         newCard.id = "card"+cardId; //Change name of newCard at the end because this makes it visible
     },
 
-    getBingoNumbers: function(cardId, newCard) {
-            etherBingo.getCardNumbers.call(cardId, {from: account}).then(function (value) {
+    getBingoNumbers: (cardId, newCard) => {
+            etherBingo.getCardNumbers.call(cardId, {from: account}).then((value) => {
               var cardNumbers = value.valueOf();
 
               cardNumbers = cardNumbers.sort((a, b) => a - b);
@@ -102,8 +96,8 @@ window.App = {
             }).catch(App.errorHandler);
     },
 
-    getCardsOfAccount: function () {
-        etherBingo.getCardsOfAddress.call({from: account}).then(function (value) {
+    getCardsOfAccount: () => {
+        etherBingo.getCardsOfAddress.call({from: account}).then((value) => {
             var cardsOfAccount = value.valueOf();
             console.log("Cards of account retrieved: " + cardsOfAccount);
             for (var i in cardsOfAccount) {
@@ -112,25 +106,21 @@ window.App = {
         }).catch(App.errorHandler);
     },
 
-    getCardCount: function () {
-        etherBingo.getGameCounter.call({from: account}).then(function (value) {
+    getCardCount: () => {
+        etherBingo.getGameCounter.call({from: account}).then((value) => {
             var counter_element = document.getElementById("counter");
             counter_element.innerHTML = value.valueOf();
         }).catch(App.errorHandler);
     },
 
-    buyNewCard: function () {
-        console.log(etherBingo);
-
-        etherBingo.buyCard({from: account}).then(function() {
-            console.log("Testing");
-        }).catch(App.errorHandler);
+    buyNewCard: () => {
+       etherBingo.buyCard({from: account}).catch(App.errorHandler);
     }
 };
 
 
 
-window.addEventListener('load', function() {
+window.addEventListener('load', () => {
   // Checking if Web3 has been injected by the browser (Mist/MetaMask)
   if (typeof web3 !== 'undefined') {
     console.warn("Using web3 detected from external source. If you find that your accounts don't appear or you have 0 MetaCoin, ensure you've configured that source properly. If using MetaMask, see the following link. Feel free to delete this warning. :) http://truffleframework.com/tutorials/truffle-and-metamask")
