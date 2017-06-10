@@ -3,6 +3,13 @@ body {
   margin-right: 25%;
   margin-top: 10%;
   font-family: "Open Sans", sans-serif;
+  background-image: url("/app/images/background.jpg");
+  background-repeat: no-repeat;
+  background-attachment: fixed;
+}
+
+a {
+  color: #009cff;
 }
 
 label {
@@ -19,6 +26,10 @@ input {
 button {
   font-size: 16px;
   padding: 5px;
+  background-color: lightskyblue;
+  border: 1px inset blue;
+  color: darkblue;
+  padding: 10px
 }
 
 h1, h2 {
@@ -39,18 +50,71 @@ h3 {
   font-size: 24px;
 }
 
+.game {
+  margin-bottom: 20px;
+}
+
+.whitebackground {
+  background-color: white;
+  opacity: 0.9;
+  padding: 10px;
+  color: black;
+}
+
 .bingocard {
   display: table;
   background: red;
-  width: 500px;
+  width: 280px;
   text-align: center;
   vertical-align: center;
-  margin-bottom: 40px;
 }
 
-#cardtemplate  {
+.bingocard .floatright {
+  float: right;
+}
+
+#gametemplate  {
   visibility: hidden;
   display: none;
+}
+
+.game {
+  display: block;
+  width:100%;
+}
+
+.game .playerscard {
+  float: left;
+}
+
+.game .contractscard {
+  float: right;
+}
+
+.game .drawnumbers {
+  border: 1px solid black;
+  font-family: Courier;
+  display: inline-block;
+  width: 108px;
+  height: 187px;
+  margin: 0px;
+  margin-left: 10px;
+  margin-right: 0px;
+  padding: 10px;
+  vertical-align: top;
+  background: lightblue;
+}
+.game .drawnumbers p {
+  padding: 0px;
+  margin: 0px;
+  margin-bottom: 10px;
+  font-weight: bold;
+  font-size: 12px;
+}
+
+
+.game .drawnumbers .numbers {
+  font-size: 10px;
 }
 
 .bingocard .bingocardFooter {
@@ -59,7 +123,7 @@ h3 {
 
 .bingocard .bingocardFooter div {
   position: absolute;
-  width: 500px;
+  width: 280px;
   background: red;
   color: white;
 }
@@ -71,7 +135,7 @@ h3 {
 .bingocard .bingocardHeader div {
   position:relative;
   display: table-cell;
-  padding: 8px;
+  padding: 4px;
   border: 0.5px solid black;
   color: white;
   text-decoration-color: whitesmoke;
@@ -84,8 +148,13 @@ h3 {
 .bingocard .bingocardRow div {
   display: table-cell;
   background: white;
-  padding: 8px;
+  padding: 4px;
   border-bottom: 0.5px solid black;
+}
+
+.bingocard .bingocardRow .drawNumber {
+  background: #009cff;
+  color: white;
 }
 
 .black {

@@ -5,20 +5,21 @@ import "../stylesheets/app.css";
 import { default as Web3} from 'web3';
 import { default as contract } from 'truffle-contract'
 
-// Import our contract artifacts and turn them into usable abstractions.
 import etherbingo_artifacts from '../../build/contracts/EtherBingo.json'
 
-// MetaCoin is our usable abstraction, which we'll use through the code below.
 var EtherBingo = contract(etherbingo_artifacts);
 
-// The following code is simple to show off interacting with your contracts.
-// As your needs grow you will likely need to change its form and structure.
-// For application bootstrapping, check out window.addEventListener below.
 var accounts;
 var account;
 var etherBingo;
 
+var CARDTYPE = {
+    PLAYER: { value: 0},
+    CONTRACT: { value: 1}
+};
+
 window.App = {
+
 
     start: () => {
 
@@ -44,56 +45,121 @@ window.App = {
         EtherBingo.deployed().then(function(newEtherBingo) {
             etherBingo = newEtherBingo; // set global instance reference to etherBingo
 
+            App.setContractAddress();
+
             var transfers = etherBingo.eventNewCardGenerated({fromBlock: 0, toBlock: 'latest'});
             transfers.watch(function(error, result) {
-                App.getCardCount();
-
                 if (result.args.owner == account) {
-                    App.getCardNumbers(result.args.cardId);
+                    App.getGame(result.args.cardId);
                 }
             });
 
-            App.getCardCount();
             App.getCardsOfAccount();
         });
     },
 
     errorHandler: (e) => console.log(e),
 
-    getCardNumbers: (cardId) => {
-        var cards = document.getElementById('cards');
-        var cardTemplate = document.getElementById("cardtemplate");
-        var newCard = cardTemplate.cloneNode(true);
+    getGame: (cardId) => {
+        var games = document.getElementById('games');
+        var gameTemplate = document.getElementById("gametemplate");
+        var game = gameTemplate.cloneNode(true);
 
-        cards.appendChild(newCard);
+        game.id = "game" + cardId;
+        games.insertBefore(game, games.firstChild);
 
         // Fix this uggly code
-        newCard.getElementsByClassName("bingocardFooter").item(0).childNodes.item(1).innerHTML = "Card: " + cardId;
+        game.getElementsByClassName("bingocardFooter").item(0).childNodes.item(1).innerHTML = "Card: " + cardId;
+        game.getElementsByClassName("bingocardFooter").item(1).childNodes.item(1).innerHTML = "Contract card: " + cardId;
 
-        App.getBingoNumbers(cardId, newCard);
 
-        newCard.id = "card"+cardId; //Change name of newCard at the end because this makes it visible
+        var playerCard = document.getElementById("playerCardTemplate");
+        App.getBingoNumbers(CARDTYPE.PLAYER.value, cardId, playerCard);
+        playerCard.id = "playercard"+cardId; //Change name of newCard at the end because this makes it visible
+
+        var contractCard = document.getElementById("contractCardTemplate");
+        App.getBingoNumbers(CARDTYPE.CONTRACT.value, cardId, contractCard);
+        contractCard.id = "contractcard"+cardId; //Change name of newCard at the end because this makes it visible
+
+        setTimeout(function () {
+            App.getDrawNumbersForGame(game, cardId);
+        }, 1000);
+
     },
 
-    getBingoNumbers: (cardId, newCard) => {
-            etherBingo.getCardNumbers.call(cardId, {from: account}).then((value) => {
-              var cardNumbers = value.valueOf();
+    getBingoNumbers: (cardType, cardId, newCard) => {
+        var renderBingoCard = (value) => {
+            var cardNumbers = value.valueOf();
 
-              cardNumbers = cardNumbers.sort((a, b) => a - b);
+            cardNumbers = cardNumbers.sort((a, b) => a - b);
 
-              console.log("Retrieve bingo numbers for card " + cardId + ": " + cardNumbers);
+            console.log("Retrieve bingo numbers for card " + cardId + ": " + cardNumbers);
 
-              for (var index in cardNumbers) {
-                  var rowNr = Math.floor(index / 5);
-                  var row = newCard.getElementsByClassName("bingocardRow")[rowNr];
-                  var cellNumber = index % 5;
-                  var cardNumberValue = cardNumbers[index];
-                  var targetCell = row.children[cellNumber];
+            for (var index in cardNumbers) {
+                if (index != 12) {
+                    var rowNr = Math.floor(index / 5);
+                    var row = newCard.getElementsByClassName("bingocardRow")[rowNr];
+                    var cellNumber = index % 5;
+                    var cardNumberValue = cardNumbers[index];
+                    var targetCell = row.children[cellNumber];
 
-                  targetCell.innerHTML = cardNumberValue
-              }
+                    targetCell.innerHTML = cardNumberValue
+                }
+            }
 
-            }).catch(App.errorHandler);
+        };
+
+        if (cardType == CARDTYPE.CONTRACT.value) {
+            console.log("Request numbers for contract " + cardId);
+            etherBingo.getContractCardNumbers.call(cardId, {from: account}).then(renderBingoCard).catch(App.errorHandler);
+        } else if (cardType == CARDTYPE.PLAYER.value){
+            console.log("Request numbers for player " + cardId);
+            etherBingo.getPlayerCardNumbers.call(cardId, {from: account}).then(renderBingoCard).catch(App.errorHandler);
+        }
+    },
+
+    getDrawNumbersForGame: (gameElement, cardId) => {
+        etherBingo.getDrawNumbersForGame.call(cardId, {from: account}).then((value) => {
+            var drawNumbersElement = gameElement.children.drawNumbersTemplate;
+            drawNumbersElement.id = "drawNumbersBox"+cardId; //Change name of newCard at the end because this makes it visible
+
+            var drawNumbers = value.valueOf();
+
+            console.log("Retrieve draw numbers for card " + cardId + ": " + drawNumbers);
+
+            var playerCard = document.getElementById("playercard"+cardId);
+            var contractCard = document.getElementById("contractcard"+cardId);
+            var drawNumbersDivElement = drawNumbersElement.children.item(1);
+            drawNumbersDivElement.innerHTML = "";
+
+            for (var index in drawNumbers) {
+                var drawNumber = drawNumbers[index];
+                
+                for (var i = 0; i <= 24; i++) {
+                    App.markDrawNumber(playerCard, i, drawNumber);
+                    App.markDrawNumber(contractCard, i, drawNumber);
+                }
+
+                if (index > 0) {
+                    drawNumbersDivElement.innerHTML += ", ";
+                }
+                drawNumbersDivElement.innerHTML += drawNumber;
+
+                // sleep(100);
+            }
+
+        }).catch(App.errorHandler);
+    },
+
+    markDrawNumber: (card, index, drawNumber) => {
+        var rowNr = Math.floor(index / 5);
+        var row = card.getElementsByClassName("bingocardRow")[rowNr];
+        var cellNumber = index % 5;
+        var targetCell = row.children[cellNumber];
+
+        if (targetCell.innerHTML == drawNumber) {
+            targetCell.classList.add('drawNumber');
+        }
     },
 
     getCardsOfAccount: () => {
@@ -101,23 +167,37 @@ window.App = {
             var cardsOfAccount = value.valueOf();
             console.log("Cards of account retrieved: " + cardsOfAccount);
             for (var i in cardsOfAccount) {
-                App.getCardNumbers(cardsOfAccount[i]);
+                App.getGame(cardsOfAccount[i]);
             }
         }).catch(App.errorHandler);
     },
 
-    getCardCount: () => {
-        etherBingo.getGameCounter.call({from: account}).then((value) => {
-            var counter_element = document.getElementById("counter");
-            counter_element.innerHTML = value.valueOf();
-        }).catch(App.errorHandler);
+    buyNewCard: () => {
+       etherBingo.buyCard({from: account, value: 30000000000}).catch(App.errorHandler);
     },
 
-    buyNewCard: () => {
-       etherBingo.buyCard({from: account}).catch(App.errorHandler);
+    setContractAddress() {
+        var contractAddress = etherBingo.address;
+        var contractLinkElement = document.getElementById("contractlink");
+        contractLinkElement.setAttribute("href", "https://etherscan.io/address/" + contractAddress + "#code");
+        contractLinkElement.innerHTML = contractAddress;
     }
+
 };
 
+
+function sleep(milliseconds) {
+    var start = new Date().getTime();
+    for (var i = 0; i < 1e7; i++) {
+        if ((new Date().getTime() - start) > milliseconds){
+            break;
+        }
+    }
+}
+
+function insertAfter(newNode, referenceNode) {
+    referenceNode.parentNode.insertBefore(newNode, referenceNode.nextSibling);
+}
 
 
 window.addEventListener('load', () => {

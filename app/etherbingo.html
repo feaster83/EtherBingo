@@ -6,64 +6,125 @@
   <script src="./etherbingo.js"></script>
 </head>
 <body>
-  <h1>EtherBingo</h1>
+  <h1><img src="app/images/etherbingologo.png" style="margin: -15px;"></h1>
+  <p class="whitebackground">
+    Welcome to EtherBingo!
+  </p>
+  <p class="whitebackground"><strong>Game rules: </strong><br/>
+    You can buy a BINGO card for 0.2 eth. You play against the computer. There will be 50 numbers drawn and the first
+    with a BINGO (full card) wins the game.<br><br/>
 
-  <h3>Total number of cards sold: <span id="counter" class="black">[...]</span></h3>
+    If you win then you will receive 2 eth!
+
   <p><button id="buycardbutton" onclick="App.buyNewCard()">Buy BINGO Card</button></p>
 
   <p>
-    <h4>Your bingo cards</h4>
-    <hr/>
-    <div id="cards">
-      <div id="cardtemplate" class="bingocard">
-        <div class="bingocardHeader">
-          <div>B</div>
-          <div>I</div>
-          <div>N</div>
-          <div>G</div>
-          <div>O</div>
+    <h4 class="whitebackground">Your bingo games</h4>
+    <div id="games">
+      <div id="gametemplate" class="game">
+        <div id="playerCardTemplate" class="bingocard playerscard">
+          <div class="bingocardHeader">
+            <div>B</div>
+            <div>I</div>
+            <div>N</div>
+            <div>G</div>
+            <div>O</div>
+          </div>
+          <div class="bingocardRow">
+            <div>12</div>
+            <div>14</div>
+            <div>16</div>
+            <div>20</div>
+            <div>25</div>
+          </div>
+          <div class="bingocardRow">
+            <div>23</div>
+            <div>25</div>
+            <div>26</div>
+            <div>29</div>
+            <div>31</div>
+          </div>
+          <div class="bingocardRow">
+            <div>35</div>
+            <div>36</div>
+            <div><img src="app/images/ethereum.png" style="width: 20px;height: 20px"/></div>
+            <div>42</div>
+            <div>56</div>
+          </div>
+          <div class="bingocardRow">
+            <div>45</div>
+            <div>60</div>
+            <div>72</div>
+            <div>73</div>
+            <div>88</div>
+          </div>
+          <div class="bingocardRow">
+            <div>89</div>
+            <div>92</div>
+            <div>95</div>
+            <div>97</div>
+            <div>99</div>
+          </div>
+          <div class="bingocardFooter">
+            <div>Players card 1</div>
+          </div>
         </div>
-        <div class="bingocardRow">
-          <div>12</div>
-          <div>14</div>
-          <div>16</div>
-          <div>20</div>
-          <div>25</div>
+        <div id="drawNumbersTemplate" class="drawnumbers">
+          <div><p>Numbers:</p></div>
+          <div class="numbers"></div>
         </div>
-        <div class="bingocardRow">
-          <div>23</div>
-          <div>25</div>
-          <div>26</div>
-          <div>29</div>
-          <div>31</div>
-        </div>
-        <div class="bingocardRow">
-          <div>35</div>
-          <div>36</div>
-          <div>37</div>
-          <div>42</div>
-          <div>56</div>
-        </div>
-        <div class="bingocardRow">
-          <div>45</div>
-          <div>60</div>
-          <div>72</div>
-          <div>73</div>
-          <div>88</div>
-        </div>
-        <div class="bingocardRow">
-          <div>89</div>
-          <div>92</div>
-          <div>95</div>
-          <div>97</div>
-          <div>99</div>
-        </div>
-        <div class="bingocardFooter">
-          <div>Card 1</div>
+        <div id="contractCardTemplate" class="bingocard contractscard">
+          <div class="bingocardHeader">
+            <div>B</div>
+            <div>I</div>
+            <div>N</div>
+            <div>G</div>
+            <div>O</div>
+          </div>
+          <div class="bingocardRow">
+            <div>12</div>
+            <div>14</div>
+            <div>16</div>
+            <div>20</div>
+            <div>25</div>
+          </div>
+          <div class="bingocardRow">
+            <div>23</div>
+            <div>25</div>
+            <div>26</div>
+            <div>29</div>
+            <div>31</div>
+          </div>
+          <div class="bingocardRow">
+            <div>35</div>
+            <div>36</div>
+            <div><img src="app/images/ethereum.png" style="width: 20px;height: 20px"/></div>
+            <div>42</div>
+            <div>56</div>
+          </div>
+          <div class="bingocardRow">
+            <div>45</div>
+            <div>60</div>
+            <div>72</div>
+            <div>73</div>
+            <div>88</div>
+          </div>
+          <div class="bingocardRow">
+            <div>89</div>
+            <div>92</div>
+            <div>95</div>
+            <div>97</div>
+            <div>99</div>
+          </div>
+          <div class="bingocardFooter">
+            <div>Contract card 1</div>
+          </div>
         </div>
       </div>
     </div>
   </p>
+
+  <p class="whitebackground"><small>This game is powered by <a href="https://www.ethereum.org/" target="_blank">Ethereum</a> | Contract address: <a id="contractlink" href="#" target="_blank">Not connected</a></small></p>
 
 </body>
 </html>
